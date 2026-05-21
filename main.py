@@ -17,7 +17,9 @@ SENSORS = {
     "nox": "nox.csv",
     "temperature": "temperature.csv",
     "humidity": "humidity.csv",
-    "dust": "dust.csv"
+    "pm10": "pm10.csv",
+    "pm2_5": "pm2_5.csv",
+    "pm1": "pm1.csv"
 }
 
 
@@ -179,6 +181,150 @@ def add_multiple_values(floor):
         "count": len(saved)
     }), 201
 
+@app.route("/ecopoint", methods=["GET"])
+def ecopoint():
+
+    html = """
+    <!DOCTYPE html>
+    <html lang="sk">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Ecopoint Dashboard</title>
+
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 0;
+                padding: 20px;
+                background: #f4f6f8;
+            }
+
+            .container {
+                max-width: 1100px;
+                margin: 0 auto;
+                background: white;
+                padding: 24px;
+                border-radius: 12px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            }
+
+            h1 {
+                margin-top: 0;
+                text-align: center;
+            }
+
+            .form-row {
+                display: flex;
+                gap: 16px;
+                margin-bottom: 20px;
+            }
+
+            .form-group {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+            }
+
+            label {
+                margin-bottom: 6px;
+                font-weight: bold;
+            }
+
+            select, button {
+                padding: 12px;
+                font-size: 16px;
+                border: 1px solid #ccc;
+                border-radius: 8px;
+            }
+
+            button {
+                background: #2e7d32;
+                color: white;
+                cursor: pointer;
+                border: none;
+            }
+
+            button:hover {
+                background: #256628;
+            }
+
+            iframe {
+                width: 100%;
+                height: 650px;
+                border: 1px solid #ddd;
+                border-radius: 10px;
+                background: white;
+            }
+
+            @media (max-width: 700px) {
+                .form-row {
+                    flex-direction: column;
+                }
+
+                iframe {
+                    height: 500px;
+                }
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="container">
+            <h1>Ecopoint Dashboard</h1>
+
+            <form id="sensorForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="floor">Poschodie</label>
+                        <select id="floor" name="floor">
+                            {% for floor in floors %}
+                                <option value="{{ floor }}">Poschodie {{ floor }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="sensor">Senzor</label>
+                        <select id="sensor" name="sensor">
+                            {% for sensor in sensors %}
+                                <option value="{{ sensor }}">{{ sensor.upper() }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>&nbsp;</label>
+                        <button type="submit">Zobraziť graf</button>
+                    </div>
+                </div>
+            </form>
+
+            <iframe id="graphFrame" src="/api/1/co2"></iframe>
+        </div>
+
+        <script>
+            const form = document.getElementById("sensorForm");
+            const iframe = document.getElementById("graphFrame");
+
+            form.addEventListener("submit", function(event) {
+                event.preventDefault();
+
+                const floor = document.getElementById("floor").value;
+                const sensor = document.getElementById("sensor").value;
+
+                iframe.src = `/api/${floor}/${sensor}`;
+            });
+        </script>
+    </body>
+    </html>
+    """
+
+    return render_template_string(
+        html,
+        floors=FLOORS,
+        sensors=SENSORS.keys()
+    )
 
 @app.route("/")
 def index():
