@@ -1,0 +1,11 @@
+services:
+  flask-api:
+    build: .
+    container_name: sensor-flask-api
+    ports:
+      - "7000:7000"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - FLASK_ENV=development
+    restart: unless-stopped
